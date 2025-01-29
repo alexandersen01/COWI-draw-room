@@ -15,6 +15,34 @@
     let previewPoint = null;
     let isDragging = false;
     let draggedVertex = null;
+    let history = [];
+    let currentState = {
+      polygon: [],
+      placedCircles: []
+    };
+
+    function handleKeyboard(event) {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+            event.preventDefault();
+            undo();
+        }
+    }
+
+    function saveState() {
+        history.push(JSON.stringify({
+            polygon: polygon,
+            placedCircles: placedCircles
+        }));
+    }
+    
+    function undo() {
+        if (history.length > 0) {
+            const previousState = JSON.parse(history.pop());
+            polygon = previousState.polygon;
+            placedCircles = previousState.placedCircles;
+            generateGrid(); // Regenerate grid after undoing
+        }
+    }
     
     function getMousePosition(event) {
       const pt = svgElement.createSVGPoint();
@@ -50,34 +78,36 @@
     }
   
     function handleClick(event) {
-      if (mode !== 'polygon' || isDragging) return;
-      
-      const point = getMousePosition(event);
-      
-      if (!isDrawing) {
-        // Start new polygon only if there isn't one already
-        if (polygon.length === 0) {
-          firstPoint = point;
-          polygon = [point];
-          isDrawing = true;
-        }
-        return;
-      }
-  
-      if (firstPoint) {
-        const dx = point.x - firstPoint.x;
-        const dy = point.y - firstPoint.y;
-        const distanceToStart = Math.sqrt(dx * dx + dy * dy);
+        if (mode !== 'polygon' || isDragging) return;
         
-        if (distanceToStart < 20 && polygon.length >= 2) {
-          polygon = [...polygon, firstPoint];
-          isDrawing = false;
-          generateGrid();
-          return;
+        const point = getMousePosition(event);
+        
+        if (!isDrawing) {
+            if (polygon.length === 0) {
+                firstPoint = point;
+                polygon = [point];
+                isDrawing = true;
+                saveState(); // Save state after starting new polygon
+            }
+            return;
         }
-      }
-  
-      polygon = [...polygon, point];
+
+        if (firstPoint) {
+            const dx = point.x - firstPoint.x;
+            const dy = point.y - firstPoint.y;
+            const distanceToStart = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distanceToStart < 20 && polygon.length >= 2) {
+                polygon = [...polygon, firstPoint];
+                isDrawing = false;
+                generateGrid();
+                saveState(); // Save state after completing polygon
+                return;
+            }
+        }
+
+        polygon = [...polygon, point];
+        saveState(); // Save state after adding vertex
     }
   
     function generateGrid() {
@@ -127,17 +157,19 @@
     }
   
     function toggleCircle(point) {
-      if (mode !== 'circle') return;
-      placedCircles = [...placedCircles, point];
+        if (mode !== 'circle') return;
+        placedCircles = [...placedCircles, point];
+        saveState(); // Save state after placing circle
     }
   
     function removeCircle(point, event) {
-      if (event) {
-        event.stopPropagation();
-      }
-      placedCircles = placedCircles.filter(p => 
-        p.x !== point.x || p.y !== point.y
-      );
+        if (event) {
+            event.stopPropagation();
+        }
+        placedCircles = placedCircles.filter(p => 
+            p.x !== point.x || p.y !== point.y
+        );
+        saveState(); // Save state after removing circle
     }
   
     function removeLastPoint() {
@@ -163,14 +195,15 @@
     }
   
     function resetDrawing() {
-      polygon = [];
-      gridPoints = [];
-      placedCircles = [];
-      isDrawing = false;
-      firstPoint = null;
-      previewPoint = null;
-      isDragging = false;
-      draggedVertex = null;
+        polygon = [];
+        gridPoints = [];
+        placedCircles = [];
+        isDrawing = false;
+        firstPoint = null;
+        previewPoint = null;
+        isDragging = false;
+        draggedVertex = null;
+        history = []; // Clear history when resetting
     }
   
     let mousePosition = { x: 0, y: 0 };
@@ -179,7 +212,7 @@
       generateGrid();
     }
 </script>
-
+<svelte:window on:keydown={handleKeyboard}/>
 <div class="controls">
     <div class="mode-switcher">
         <label>

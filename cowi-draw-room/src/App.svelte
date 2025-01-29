@@ -3,7 +3,7 @@
 </script>
 
 <main>
-  <h1>Jakobs super duper visualizer</h1>
+  <h1>Drawing App</h1>
   <DrawingCanvas />
 </main>
 
@@ -12,9 +12,5 @@
     padding: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-  }
-
-  h1 {
-    margin-bottom: 2rem;
   }
 </style>
