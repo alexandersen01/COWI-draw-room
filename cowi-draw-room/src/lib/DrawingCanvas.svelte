@@ -416,7 +416,7 @@
 
     .control-button {
         padding: 0.5rem 1rem;
-        background: #f8f9fa;
+        background: #0778ea;
         border: 1px solid #dee2e6;
         border-radius: 4px;
         cursor: pointer;
@@ -425,7 +425,7 @@
     }
 
     .control-button:hover {
-        background: #e9ecef;
+        background: #005ab3;
         border-color: #ced4da;
     }
 
