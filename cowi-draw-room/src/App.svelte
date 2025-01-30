@@ -3,7 +3,7 @@
 </script>
 
 <main>
-  <h1>Drawing App</h1>
+  
   <DrawingCanvas />
 </main>
 
